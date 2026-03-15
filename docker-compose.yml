@@ -1,0 +1,32 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: MusicBot_DB
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       MusicBot
+      POSTGRES_USER:     admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d MusicBot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  backend:
+    build: ./backend
+    container_name: MusicBot_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://admin:admin@db:5432/MusicBot
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  db_data:
