@@ -8,9 +8,6 @@ import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
 import Entrar from "./pages/Entrar";
 import RecuperarSenha from "./pages/RecuperarSenha";
-import Chat from "./pages/Chat";
-import BaseConhecimento from "./pages/BaseConhecimento";
-import Dashboard from "./pages/Dashboard";
 import AuthCallback from "./pages/AuthCallback";
 import UnderConstruction from "./pages/UnderConstruction";
 import NotFound from "./pages/NotFound";
@@ -30,9 +27,6 @@ const App = () => (
             <Route path="/cadastro" element={<Cadastro />} />
             <Route path="/entrar" element={<Entrar />} />
             <Route path="/recuperar-senha" element={<RecuperarSenha />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/moderacao/base-conhecimento" element={<BaseConhecimento />} />
-            <Route path="/moderacao/dashboard" element={<Dashboard />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/under-construction" element={<UnderConstruction />} />
             <Route path="*" element={<NotFound />} />
