@@ -67,6 +67,34 @@ sudo apt install postgresql postgresql-contrib -y
 
 ---
 
+**Docker**
+
+Para subir o projeto com o frontend containerizado:
+
+```bash
+docker compose up --build
+```
+
+Serviços:
+
+- Frontend: `http://localhost:8080`
+- Backend: `http://localhost:5000`
+- PostgreSQL: `localhost:5432`
+
+Se o login com Spotify for utilizado via Docker, configure a Redirect URI da aplicação no Spotify como:
+
+```text
+http://localhost:8080/api/callback
+```
+
+Após a autenticação, o backend redireciona o usuário para:
+
+```text
+http://localhost:8080/auth/callback
+```
+
+---
+
 # #em construção#
 
 ---

@@ -11,14 +11,15 @@ from flask import Flask, redirect, request, session, url_for, render_template_st
 from functions import get_playlists, get_recently_played, get_top_tracks, get_top_artists, get_saved_tracks
 
 app = Flask(__name__)
-app.secret_key = "troca-por-uma-chave-fixa-qualquer-aqui"
-app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-app.config["SESSION_COOKIE_SECURE"]   = False
+app.secret_key = os.getenv("APP_SECRET_KEY", "troca-por-uma-chave-fixa-qualquer-aqui")
+app.config["SESSION_COOKIE_SAMESITE"] = os.getenv("SESSION_COOKIE_SAMESITE", "Lax")
+app.config["SESSION_COOKIE_SECURE"] = os.getenv("SESSION_COOKIE_SECURE", "false").lower() == "true"
 
 # ── Configuração ───────────────────────────────────────────────────────────────
-CLIENT_ID    = os.getenv("SPOTIFY_CLIENT_ID", "b5727e21ded847928278e6fe1782060f")
-REDIRECT_URI = "http://127.0.0.1:5000/callback"
-SCOPES       = " ".join([
+CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "b5727e21ded847928278e6fe1782060f")
+REDIRECT_URI = os.getenv("SPOTIFY_REDIRECT_URI", "http://127.0.0.1:5000/callback")
+POST_LOGIN_REDIRECT_URI = os.getenv("POST_LOGIN_REDIRECT_URI", "/profile")
+SCOPES = " ".join([
     "user-read-private",
     "user-read-email",
     "user-library-read",
@@ -32,6 +33,42 @@ SCOPES       = " ".join([
 AUTH_URL  = "https://accounts.spotify.com/authorize"
 TOKEN_URL = "https://accounts.spotify.com/api/token"
 API_BASE  = "https://api.spotify.com/v1"
+
+
+def wants_html():
+    accept_header = request.headers.get("Accept", "")
+    return "text/html" in accept_header
+
+
+def unauthorized():
+    if wants_html():
+        return redirect(url_for("index"))
+    return {"error": "not_authenticated"}, 401
+
+
+def get_current_user():
+    token = session.get("access_token")
+    if not token:
+        return None, None
+
+    me = requests.get(f"{API_BASE}/me", headers={"Authorization": f"Bearer {token}"})
+    if me.status_code == 401:
+        session.clear()
+        return None, 401
+    if not me.ok:
+        return None, me.status_code
+
+    user = me.json()
+    return {
+        "name": user.get("display_name", "Usuário"),
+        "display_name": user.get("display_name", "Usuário"),
+        "email": user.get("email", ""),
+        "followers": user.get("followers", {}).get("total", 0),
+        "avatar": (user.get("images") or [{}])[0].get("url", ""),
+        "plan": user.get("product", "free").upper(),
+        "product": user.get("product", "free"),
+        "images": user.get("images", []),
+    }, None
 
 # ── PKCE ───────────────────────────────────────────────────────────────────────
 def make_verifier():
@@ -269,37 +306,36 @@ def callback():
     tokens = resp.json()
     session["access_token"]  = tokens["access_token"]
     session["refresh_token"] = tokens.get("refresh_token")
-    return redirect(url_for("profile"))
+    return redirect(POST_LOGIN_REDIRECT_URI)
 
 
 @app.route("/profile")
 def profile():
-    token = session.get("access_token")
-    if not token:
-        return redirect(url_for("index"))
+    user, error_status = get_current_user()
+    if user is None:
+        if error_status is None or error_status == 401:
+            return unauthorized()
+        return {"error": "spotify_request_failed"}, error_status
 
-    me = requests.get(f"{API_BASE}/me", headers={"Authorization": f"Bearer {token}"})
-    if me.status_code == 401:
-        session.clear()
-        return redirect(url_for("index"))
+    if wants_html():
+        return render_template_string(
+            PROFILE_HTML,
+            name=user["name"],
+            email=user["email"] or "—",
+            followers=user["followers"],
+            avatar=user["avatar"],
+            plan=user["plan"],
+        )
 
-    user   = me.json()
-    avatar = (user.get("images") or [{}])[0].get("url", "")
-    plan   = user.get("product", "free").upper()
-
-    return render_template_string(PROFILE_HTML,
-        name      = user.get("display_name", "Usuário"),
-        email     = user.get("email", "—"),
-        followers = user["followers"]["total"],
-        avatar    = avatar,
-        plan      = plan,
-    )
+    return user
 
 
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("index"))
+    if wants_html():
+        return redirect(url_for("index"))
+    return "", 204
 
 
 # ── Rotas de dados do Spotify ──────────────────────────────────────────────────
@@ -308,7 +344,7 @@ def logout():
 def playlists():
     token = session.get("access_token")
     if not token:
-        return redirect(url_for("index"))
+        return unauthorized()
     return {"playlists": get_playlists(token)}
 
 
@@ -316,7 +352,7 @@ def playlists():
 def recently_played():
     token = session.get("access_token")
     if not token:
-        return redirect(url_for("index"))
+        return unauthorized()
     return {"tracks": get_recently_played(token)}
 
 
@@ -324,7 +360,7 @@ def recently_played():
 def top_tracks():
     token = session.get("access_token")
     if not token:
-        return redirect(url_for("index"))
+        return unauthorized()
     return {"tracks": get_top_tracks(token)}
 
 
@@ -332,7 +368,7 @@ def top_tracks():
 def top_artists():
     token = session.get("access_token")
     if not token:
-        return redirect(url_for("index"))
+        return unauthorized()
     return {"artists": get_top_artists(token)}
 
 
@@ -340,11 +376,15 @@ def top_artists():
 def saved_tracks():
     token = session.get("access_token")
     if not token:
-        return redirect(url_for("index"))
+        return unauthorized()
     return {"tracks": get_saved_tracks(token)}
 
 
 # ── Inicia o servidor ──────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(
+        host=os.getenv("HOST", "0.0.0.0"),
+        port=int(os.getenv("PORT", "5000")),
+        debug=os.getenv("FLASK_DEBUG", "true").lower() == "true",
+    )
