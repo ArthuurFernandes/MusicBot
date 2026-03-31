@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       name: 'João Silva',
       email: 'joao@email.com',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=joao',
-      role,
+      role: 'moderator',
     });
   };
 
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       name: profile.name,
       email: profile.email,
       avatar: profile.avatar,
-      role: 'user',
+      role: 'moderator',
       plan: profile.plan,
       followers: profile.followers,
     });

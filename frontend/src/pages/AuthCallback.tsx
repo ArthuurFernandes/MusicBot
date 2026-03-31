@@ -26,7 +26,7 @@ const AuthCallback = () => {
             navigate('/cadastro?step=confirm', { replace: true });
           } else {
             loginWithProfile(profile);
-            navigate('/under-construction', { replace: true });
+            navigate('/chat', { replace: true });
           }
         } else {
           setStatus('error');
@@ -55,11 +55,9 @@ const AuthCallback = () => {
             <p className="text-slate text-sm text-center">Autenticando com Spotify...</p>
           </>
         ) : (
-          <>
-            <p className="text-magenta text-sm text-center">
-              Falha na autenticação. Redirecionando...
-            </p>
-          </>
+          <p className="text-magenta text-sm text-center">
+            Falha na autenticação. Redirecionando...
+          </p>
         )}
       </div>
     </AuthCard>
