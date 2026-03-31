@@ -41,7 +41,7 @@ export default function Profile() {
         ]);
 
         if (!profileRes.ok) {
-          navigate("/login");
+          navigate("/chat");
           return;
         }
 
@@ -59,7 +59,7 @@ export default function Profile() {
           setTracks(tracksData.tracks ?? []);
         }
       } catch {
-        navigate("/login");
+        navigate("/chat");
       } finally {
         setLoading(false);
       }

@@ -72,6 +72,15 @@ const Chat = () => {
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const resizeTextarea = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
+  };
 
   const displayName = useMemo(() => {
     if (!user?.name) return 'Visitante';
@@ -94,6 +103,10 @@ const Chat = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    resizeTextarea();
+  }, [inputValue]);
 
   const openDashboard = () => {
     setShowSettings(false);
@@ -134,6 +147,9 @@ const Chat = () => {
 
     setMessages((prev) => [...prev, userMessage]);
     setInputValue('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
     setIsTyping(true);
 
     globalThis.setTimeout(() => {
@@ -285,17 +301,18 @@ const Chat = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="glass rounded-2xl px-3 py-3 sm:px-4 sm:py-4">
-          <div className="flex items-end gap-3">
+          <div className="flex items-end gap-3 sm:gap-4">
             <textarea
+              ref={textareaRef}
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
               placeholder="Digite sua mensagem..."
               rows={1}
-              className="w-full resize-none bg-transparent text-off-white placeholder:text-slate focus:outline-none text-sm sm:text-base max-h-32"
+              className="w-full min-h-[44px] resize-none overflow-y-auto bg-transparent text-off-white placeholder:text-slate focus:outline-none text-sm sm:text-base leading-6 max-h-40"
             />
             <button
               type="submit"
-              className="bg-magenta text-off-white rounded-xl px-4 py-2.5 text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50"
+              className="shrink-0 h-11 bg-magenta text-off-white rounded-xl px-5 text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50"
               disabled={!inputValue.trim()}
             >
               Enviar
@@ -303,8 +320,8 @@ const Chat = () => {
           </div>
         </form>
 
-        <div className="flex items-center justify-between mt-4 sm:mt-5 px-1 gap-3">
-          <div className="flex items-center gap-1 sm:gap-2">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center mt-4 sm:mt-5 px-1 gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 justify-self-start">
             <button
               type="button"
               onClick={() => setConversationRating(conversationRating === 'positive' ? null : 'positive')}
@@ -364,7 +381,7 @@ const Chat = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center justify-center gap-2 min-w-0 justify-self-center">
             <button
               type="button"
               onClick={handlePreviousConversation}
@@ -376,7 +393,7 @@ const Chat = () => {
             <button
               type="button"
               onClick={() => setShowHistory(true)}
-              className="text-slate text-sm hover:text-off-white transition-colors font-body max-w-[220px] truncate"
+              className="text-slate text-sm hover:text-off-white transition-colors font-body max-w-[220px] truncate text-center"
             >
               {conversationTitle}
             </button>
@@ -390,7 +407,7 @@ const Chat = () => {
             </button>
           </div>
 
-          <div className="relative">
+          <div className="relative justify-self-end">
             <button type="button" onClick={() => setShowSettings((prev) => !prev)} className="relative">
               <img
                 src={userAvatar}
