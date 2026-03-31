@@ -9,7 +9,7 @@ export interface UserProfile {
 }
 
 export function redirectToSpotifyAuth(): void {
-  window.location.href = `${API_BASE}/login`;
+  window.location.href = `${API_BASE}/auth/login`;
 }
 
 export async function getAuthenticatedUser(): Promise<UserProfile | null> {

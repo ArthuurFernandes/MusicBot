@@ -40,33 +40,11 @@ export default function Profile() {
           fetch(`${API}/recently-played`, { credentials: "include" }),
         ]);
 
-
-
-
         if (!profileRes.ok) {
-          // MOCK para teste — remova depois
-          setUser({
-            name: "Usuário Teste",
-            email: "teste@email.com",
-            avatar: "",
-            plan: "FREE",
-            followers: 42,
-          });
-          setTracks([
-            { name: "Bohemian Rhapsody", artist: "Queen", album: "A Night at the Opera", played_at: new Date(Date.now() - 300000).toISOString() },
-            { name: "Blinding Lights", artist: "The Weeknd", album: "After Hours", played_at: new Date(Date.now() - 3600000).toISOString() },
-            { name: "Levitating", artist: "Dua Lipa", album: "Future Nostalgia", played_at: new Date(Date.now() - 7200000).toISOString() },
-          ]);
+          navigate("/login");
           return;
         }
 
-
-        /*
-                if (!profileRes.ok) {
-                  navigate("/login");
-                  return;
-                }
-        */
         const profileData = await profileRes.json();
         setUser({
           name: profileData.display_name ?? profileData.name ?? "",
