@@ -9,12 +9,12 @@ export interface UserProfile {
 }
 
 export function redirectToSpotifyAuth(): void {
-  window.location.href = `${API_BASE}/login`;
+  globalThis.location.href = `${API_BASE}/auth/login`;
 }
 
 export async function getAuthenticatedUser(): Promise<UserProfile | null> {
   try {
-    const res = await fetch(`${API_BASE}/profile`, {
+    const res = await fetch(`${API_BASE}/spotify/profile`, {
       credentials: 'include',
     });
 
@@ -36,7 +36,7 @@ export async function getAuthenticatedUser(): Promise<UserProfile | null> {
 
 export async function logout(): Promise<void> {
   try {
-    await fetch(`${API_BASE}/logout`, { credentials: 'include' });
+    await fetch(`${API_BASE}/auth/logout`, { credentials: 'include' });
   } catch {
     // silently fail
   }

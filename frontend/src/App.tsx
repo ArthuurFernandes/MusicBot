@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import BaseConhecimento from "./pages/BaseConhecimento";
+import Chat from "./pages/Chat";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +32,7 @@ const App = () => (
             <Route path="/entrar" element={<Entrar />} />
             <Route path="/recuperar-senha" element={<RecuperarSenha />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/chat" element={<UnderConstruction />} />
+            <Route path="/chat" element={<Chat />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/base-conhecimento" element={<BaseConhecimento />} />
             <Route path="/under-construction" element={<UnderConstruction />} />

@@ -23,7 +23,8 @@ services:
     environment:
       DATABASE_URL: postgresql://admin:admin@db:5432/MusicBot
       APP_SECRET_KEY: musicbot-dev-secret-key
-      SPOTIFY_REDIRECT_URI: http://localhost:8080/api/callback
+      SPOTIFY_REDIRECT_URI: http://localhost:8080/api/auth/callback
+      FRONTEND_URL: http://localhost:8080
       POST_LOGIN_REDIRECT_URI: http://localhost:8080/auth/callback
     ports:
       - "5000:5000"
