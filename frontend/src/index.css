@@ -87,6 +87,17 @@
     font-family: 'JetBrains Mono', monospace;
   }
 
+  .music-texture {
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 11px,
+        hsla(0, 0%, 100%, 0.015) 11px,
+        hsla(0, 0%, 100%, 0.015) 12px
+      );
+  }
+
   .text-off-white {
     color: hsl(var(--paper-off-white));
   }
