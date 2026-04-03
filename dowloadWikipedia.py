@@ -9,7 +9,7 @@ import os
 bandas = [
     "The Beatles", "Queen", "Pink Floyd", "The Rolling Stones",
     "Led Zeppelin", "Nirvana", "Metallica", "Radiohead",
-    "The Who", "The Doors"
+    "The Doors", "Geese", "Black Country, New Road", "Calcinha Preta", "Legião Urbana", "Racionais MC's"
 ]
 
 # Idiomas desejados: (código, nome_da_pasta)
