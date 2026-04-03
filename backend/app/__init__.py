@@ -13,15 +13,21 @@ def create_app() -> Flask:
     _register_blueprints(app)
     _register_error_handlers(app)
 
+    with app.app_context():
+        from app.database.connection import init_db
+        init_db()
+
     return app
 
 
 def _register_blueprints(app: Flask) -> None:
     from .auth.blueprint    import auth_bp
     from .spotify.blueprint import spotify_bp
+    from .chat.blueprint    import chat_bp
 
     app.register_blueprint(auth_bp)     # /auth/login, /auth/callback, /auth/logout
     app.register_blueprint(spotify_bp)  # /profile, /playlists, /recently-played ...
+    app.register_blueprint(chat_bp)     # /chat/, /chat/<id>/message
 
 
 def _register_error_handlers(app: Flask) -> None:

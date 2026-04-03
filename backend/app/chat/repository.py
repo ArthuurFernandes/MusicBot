@@ -1,0 +1,94 @@
+from app.database.connection import get_session
+from app.database.models import Chat, Pergunta, Resposta, Usuario
+
+
+class ChatRepository:
+
+    def get_or_create_usuario(self, spotify_id: str) -> Usuario:
+        """Cria o usuário no banco se ainda não existir."""
+        db = get_session()
+        try:
+            usuario = db.get(Usuario, spotify_id)
+            if not usuario:
+                usuario = Usuario(spotify_id=spotify_id)
+                db.add(usuario)
+                db.commit()
+            return usuario
+        finally:
+            db.close()
+
+    def criar_chat(self, spotify_id: str, titulo: str = "Nova conversa") -> Chat:
+        db = get_session()
+        try:
+            chat = Chat(usuario_id=spotify_id, titulo=titulo)
+            db.add(chat)
+            db.commit()
+            db.refresh(chat)
+            return chat
+        finally:
+            db.close()
+
+    def get_chat(self, chat_id: int, spotify_id: str) -> Chat | None:
+        db = get_session()
+        try:
+            return db.query(Chat).filter(
+                Chat.id == chat_id,
+                Chat.usuario_id == spotify_id,
+            ).first()
+        finally:
+            db.close()
+
+    def listar_chats(self, spotify_id: str) -> list[Chat]:
+        db = get_session()
+        try:
+            return db.query(Chat).filter(
+                Chat.usuario_id == spotify_id,
+            ).order_by(Chat.updated_at.desc()).all()
+        finally:
+            db.close()
+
+    def salvar_pergunta(self, chat_id: int, conteudo: str) -> Pergunta:
+        db = get_session()
+        try:
+            pergunta = Pergunta(chat_id=chat_id, conteudo=conteudo)
+            db.add(pergunta)
+            db.commit()
+            db.refresh(pergunta)
+            return pergunta
+        finally:
+            db.close()
+
+    def salvar_resposta(self, pergunta_id: int, conteudo: str, usou_rag: bool = False) -> Resposta:
+        db = get_session()
+        try:
+            resposta = Resposta(
+                pergunta_id=pergunta_id,
+                conteudo=conteudo,
+                usou_rag=usou_rag,
+            )
+            db.add(resposta)
+            db.commit()
+            db.refresh(resposta)
+            return resposta
+        finally:
+            db.close()
+
+    def get_historico(self, chat_id: int, limite: int = 20) -> list[dict]:
+        """
+        Retorna o histórico no formato que o Ollama espera:
+        [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]
+        """
+        db = get_session()
+        try:
+            perguntas = db.query(Pergunta).filter(
+                Pergunta.chat_id == chat_id,
+            ).order_by(Pergunta.created_at.asc()).limit(limite).all()
+
+            historico = []
+            for p in perguntas:
+                historico.append({"role": "user", "content": p.conteudo})
+                if p.resposta:
+                    historico.append({"role": "assistant", "content": p.resposta.conteudo})
+            return historico
+        finally:
+            db.close()

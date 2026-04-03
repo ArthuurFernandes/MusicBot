@@ -39,6 +39,17 @@ class Config:
     RECCO_API_BASE = "https://api.reccobeats.com/v1"
     RECCO_API_KEY  = os.getenv("RECCO_API_KEY", None)
 
+    # Banco de dados
+    DATABASE_URL = os.getenv(
+        "DATABASE_URL",
+        "postgresql://admin:admin@localhost:5432/MusicBot"
+    )
+
+    # Ollama
+    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_MODEL    = os.getenv("OLLAMA_MODEL", "qwen3:latest")
+    OLLAMA_KEEP_ALIVE = os.getenv("OLLAMA_KEEP_ALIVE", "30s")  # -1 = nunca descarrega
+
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -54,6 +65,6 @@ config_by_env = {
     "production":  ProductionConfig,
 }
 
-def get_config() -> Config:
+def get_config() -> type[Config]:
     env = os.getenv("FLASK_ENV", "development")
     return config_by_env.get(env, DevelopmentConfig)

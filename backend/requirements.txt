@@ -3,3 +3,10 @@ flask-cors>=4.0
 flask-session>=0.8
 spotipy>=2.24
 requests>=2.32
+sqlalchemy>=2.0
+psycopg2-binary>=2.9
+langchain>=0.3
+langchain-core>=0.3
+langchain-ollama>=0.2
+wikipedia>=1.4.0
+faker
