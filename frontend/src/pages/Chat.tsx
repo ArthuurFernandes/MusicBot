@@ -228,7 +228,8 @@ const Chat = () => {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    handleSendMessage();
+    event.stopPropagation();
+    if (!isTyping) handleSendMessage();
   };
 
   const handlePreviousConversation = () => {
@@ -278,8 +279,8 @@ const Chat = () => {
             type="button"
             onClick={() => handleSelectConversation(conversation.id)}
             className={`w-full text-left rounded-xl px-3 py-3 transition-colors ${conversation.id === currentConversationId
-                ? 'bg-white/15 text-off-white'
-                : 'bg-white/5 text-slate hover:text-off-white hover:bg-white/10'
+              ? 'bg-white/15 text-off-white'
+              : 'bg-white/5 text-slate hover:text-off-white hover:bg-white/10'
               }`}
           >
             <p className="text-sm font-medium truncate">{conversation.title}</p>
@@ -313,8 +314,8 @@ const Chat = () => {
               >
                 <div
                   className={`max-w-[90%] sm:max-w-[78%] rounded-2xl px-4 sm:px-5 py-3 sm:py-4 ${message.role === 'user'
-                      ? 'bg-teal text-off-white rounded-br-md'
-                      : 'glass text-off-white rounded-bl-md'
+                    ? 'bg-teal text-off-white rounded-br-md'
+                    : 'glass text-off-white rounded-bl-md'
                     }`}
                 >
                   <p className="text-sm sm:text-base whitespace-pre-wrap leading-relaxed">{message.content}</p>
@@ -351,7 +352,13 @@ const Chat = () => {
               ref={textareaRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSendMessage();
+                }
+              }}
               placeholder="Digite sua mensagem..."
               rows={1}
               className="w-full min-h-[44px] resize-none overflow-y-auto bg-transparent text-off-white placeholder:text-slate focus:outline-none text-sm sm:text-base leading-6 max-h-40"

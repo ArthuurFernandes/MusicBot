@@ -47,7 +47,7 @@ class Config:
 
     # Ollama
     OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    OLLAMA_MODEL    = os.getenv("OLLAMA_MODEL", "qwen3:latest")
+    OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen:4b")
     OLLAMA_KEEP_ALIVE = os.getenv("OLLAMA_KEEP_ALIVE", "30s")  # -1 = nunca descarrega
 
 
