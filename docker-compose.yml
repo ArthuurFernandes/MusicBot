@@ -1,4 +1,5 @@
 services:
+
   db:
     image: postgres:16-alpine
     container_name: MusicBot_DB
@@ -16,21 +17,66 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: MusicBot_Ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list | grep -q 'qwen:4b' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: MusicBot_Ollama_Init
+    depends_on:
+      - ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: >
+      /bin/sh -c "
+        echo 'Aguardando Ollama iniciar...';
+        sleep 10;
+        ollama pull qwen:4b;
+        echo 'Modelo qwen:4b baixado com sucesso!';
+      "
+    restart: "no"
+
   backend:
     build: ./backend
     container_name: MusicBot_backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://admin:admin@db:5432/MusicBot
-      APP_SECRET_KEY: musicbot-dev-secret-key
-      SPOTIFY_REDIRECT_URI: http://localhost:8080/api/auth/callback
-      FRONTEND_URL: http://localhost:8080
-      POST_LOGIN_REDIRECT_URI: http://localhost:8080/auth/callback
+      DATABASE_URL:          postgresql://admin:admin@db:5432/MusicBot
+      APP_SECRET_KEY:        musicbot-dev-secret-key
+      SPOTIFY_REDIRECT_URI:  http://127.0.0.1:5000/auth/callback
+      FRONTEND_URL:          http://localhost:8080
+      OLLAMA_BASE_URL:       http://ollama:11434
+      OLLAMA_MODEL:          qwen:4b
+      OLLAMA_KEEP_ALIVE:     30s
     ports:
       - "5000:5000"
     depends_on:
       db:
         condition: service_healthy
+      ollama:
+        condition: service_started
 
   frontend:
     build: ./frontend
@@ -43,3 +89,4 @@ services:
 
 volumes:
   db_data:
+  ollama_data:
